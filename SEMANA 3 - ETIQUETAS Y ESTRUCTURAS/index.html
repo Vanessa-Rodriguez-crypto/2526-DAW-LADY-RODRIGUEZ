@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Semana 3 - Página Web HTML5</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header>
+        <h1>Mi Sitio Web de Ejemplo - Semana 3</h1>
+
+        <nav>
+            <ul>
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#contenido">Contenido</a></li>
+                <li><a href="#galeria">Multimedia</a></li>
+                <li><a href="#tabla">Tabla</a></li>
+                <li><a href="#formulario">Formulario</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+
+        <section id="inicio">
+            <h2>Bienvenidos</h2>
+            <p>
+                Este proyecto corresponde a la <strong>Semana 3</strong> donde aplicamos conocimientos de
+                <em>HTML5, etiquetas semánticas, multimedia y CSS.</em>
+            </p>
+        </section>
+
+        <section id="contenido">
+            <article>
+                <h3>Contenido del Proyecto</h3>
+                <p>
+                    Esta página demuestra el uso correcto de las etiquetas semánticas, así como la
+                    inclusión de listas, tablas, imágenes, videos y un formulario básico.
+                </p>
+
+                <h3>Lista Ordenada</h3>
+                <ol>
+                    <li>Crear estructura del proyecto</li>
+                    <li>Diseñar página HTML5</li>
+                    <li>Publicar en GitHub Pages</li>
+                </ol>
+
+                <h3>Lista Desordenada</h3>
+                <ul>
+                    <li>HTML5</li>
+                    <li>CSS3</li>
+                    <li>Multimedia</li>
+                </ul>
+
+                <p>
+                    Enlace externo: 
+                    <a href="https://www.google.com" target="_blank">Visitar Google</a>
+                </p>
+            </article>
+        </section>
+
+        <section id="galeria">
+            <h2>Galería Multimedia</h2>
+
+            <h3>Imagen</h3>
+            <img src="assets/imagen/imagen1.jpg" alt="Imagen de ejemplo">
+
+            <h3>Video</h3>
+            <video controls width="400">
+                <source src="assets/video/video1.mp4" type="video/mp4">
+                Tu navegador no soporta el video.
+            </video>
+        </section>
+
+        <section id="tabla">
+            <h2>Tabla de Datos</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Edad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>María</td>
+                        <td>22</td>
+                    </tr>
+                    <tr>
+                        <td>Carlos</td>
+                        <td>28</td>
+                    </tr>
+                    <tr>
+                        <td>Ana</td>
+                        <td>19</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="formulario">
+            <h2>Formulario de Contacto</h2>
+
+            <form>
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" placeholder="Ingresa tu nombre" required>
+
+                <label for="correo">Correo:</label>
+                <input type="email" id="correo" placeholder="Ingresa tu correo" required>
+
+                <button type="submit">Enviar</button>
+            </form>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>© 2025 - Página creada para la Tarea de Semana 3</p>
+    </footer>
+
+</body>
+</html>
