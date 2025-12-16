@@ -1,0 +1,48 @@
+body {
+font-family: Arial, sans-serif;
+}
+
+
+.btn-primary {
+background-color: #ff5733;
+border: none;
+transition: transform 0.3s ease, background-color 0.3s ease;
+}
+
+
+.btn-primary:hover {
+background-color: #c70039;
+transform: scale(1.05);
+}
+
+
+.card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+border-radius: 15px;
+}
+
+
+.card-hover:hover {
+transform: translateY(-10px);
+box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+
+footer a {
+text-decoration: none;
+margin: 0 10px;
+color: #333;
+}
+
+
+footer a:hover {
+color: #ff5733;
+}
+
+
+/* Media Query Personalizada */
+@media (max-width: 576px) {
+header {
+background-color: #ffefe8;
+}
+}
