@@ -2,7 +2,7 @@ from flask import Flask, render_template
 
 app = Flask(__name__)
 
-# Página principal
+# Ruta principal
 @app.route('/')
 def inicio():
     return render_template('index.html')
@@ -10,7 +10,10 @@ def inicio():
 # Ruta dinámica
 @app.route('/cita/<paciente>')
 def cita(paciente):
-    return f'<h2>Bienvenido, {paciente}. Tu cita médica está en proceso.</h2>'
+    return f'Bienvenido {paciente}, tu cita médica ha sido registrada correctamente.'
 
+# IMPORTANTE PARA RENDER
 if __name__ == '__main__':
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
