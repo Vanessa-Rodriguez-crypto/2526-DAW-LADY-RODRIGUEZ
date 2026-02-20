@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Turnos - Clínica</title>
+
+```
+<!-- conectar css -->
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+```
+
+</head>
+
+<body>
+
+```
+<header>
+    <h1>Clínica Salud Vital</h1>
+    <nav>
+        <a href="/">Inicio</a> |
+        <a href="/about">Acerca de</a> |
+        <a href="/cita/Lady">Solicitar Cita</a>
+    </nav>
+    <hr>
+</header>
+
+<!-- AQUI CAMBIA EL CONTENIDO -->
+{% block content %}
+{% endblock %}
+
+<footer>
+    <hr>
+    <p>© 2026 Clínica Salud Vital - Sistema de Turnos</p>
+</footer>
+```
+
+</body>
+</html>
