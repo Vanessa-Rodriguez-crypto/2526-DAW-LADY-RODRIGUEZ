@@ -1,22 +1,18 @@
 <!DOCTYPE html>
-
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema de Turnos - Clínica</title>
+    <title>Clínica Salud Vital</title>
 
-```
-<!-- conectar css -->
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-```
-
+    <!-- Conectar CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 
 <body>
 
-```
 <header>
     <h1>Clínica Salud Vital</h1>
+
     <nav>
         <a href="/">Inicio</a> |
         <a href="/about">Acerca de</a> |
@@ -25,15 +21,17 @@
     <hr>
 </header>
 
-<!-- AQUI CAMBIA EL CONTENIDO -->
-{% block content %}
-{% endblock %}
+<!-- AQUÍ SE INSERTAN LAS DEMÁS PÁGINAS -->
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+<hr>
 
 <footer>
-    <hr>
-    <p>© 2026 Clínica Salud Vital - Sistema de Turnos</p>
+    <p>© 2026 Clínica Salud Vital - Sistema de Gestión de Citas Médicas</p>
 </footer>
-```
 
 </body>
 </html>
