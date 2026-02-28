@@ -22,3 +22,5 @@ Thumbs.db
 # Archivos temporales
 
 *.log
+
+clinica.db
