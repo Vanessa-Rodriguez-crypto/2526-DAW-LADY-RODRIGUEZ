@@ -2,15 +2,24 @@
 
 {% block content %}
 
-<h2>Confirmación de Cita</h2>
+<h2>Solicitar Cita Médica</h2>
 
-<p>
-Bienvenido <strong>{{ paciente }}</strong>.
-</p>
+<form method="POST">
 
-<p>
-Tu cita médica ha sido registrada correctamente en el sistema.
-Nuestro personal se comunicará contigo para confirmar la fecha y hora de atención.
-</p>
+<label>Nombre</label><br>
+<input type="text" name="nombre" required><br><br>
+
+<label>Teléfono</label><br>
+<input type="text" name="telefono" required><br><br>
+
+<label>Motivo de la cita</label><br>
+<textarea name="motivo" required></textarea><br><br>
+
+<button type="submit">Guardar Cita</button>
+
+</form>
+
+<br>
+<a href="/">Volver al inicio</a>
 
 {% endblock %}

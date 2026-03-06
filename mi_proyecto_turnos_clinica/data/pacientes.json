@@ -1,0 +1,12 @@
+[
+    {
+        "nombre": "maria",
+        "telefono": "3254485",
+        "motivo": "malestar "
+    },
+    {
+        "nombre": "vanessa ",
+        "telefono": "3587665",
+        "motivo": "dolor de cabeza\r\n"
+    }
+]

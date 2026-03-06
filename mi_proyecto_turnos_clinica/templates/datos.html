@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Datos de Pacientes Guardados</h2>
+
+<h3>Archivo TXT</h3>
+
+<table border="1">
+<tr>
+<th>Nombre</th>
+<th>Teléfono</th>
+<th>Motivo</th>
+</tr>
+
+{% for p in txt %}
+<tr>
+<td>{{ p[0] }}</td>
+<td>{{ p[1] }}</td>
+<td>{{ p[2] }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+
+<br><br>
+
+<h3>Archivo JSON</h3>
+
+<table border="1">
+
+<tr>
+<th>Nombre</th>
+<th>Teléfono</th>
+<th>Motivo</th>
+</tr>
+
+{% for p in json %}
+
+<tr>
+<td>{{ p.nombre }}</td>
+<td>{{ p.telefono }}</td>
+<td>{{ p.motivo }}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+
+<br><br>
+
+<h3>Archivo CSV</h3>
+
+<table border="1">
+
+<tr>
+<th>Nombre</th>
+<th>Teléfono</th>
+<th>Motivo</th>
+</tr>
+
+{% for p in csv %}
+
+<tr>
+<td>{{ p[0] }}</td>
+<td>{{ p[1] }}</td>
+<td>{{ p[2] }}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+{% endblock %}

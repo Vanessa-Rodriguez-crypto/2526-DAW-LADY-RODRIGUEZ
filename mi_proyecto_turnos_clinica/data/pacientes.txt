@@ -1,0 +1,3 @@
+maria,3254485,malestar 
+vanessa ,3587665,dolor de cabeza
+
