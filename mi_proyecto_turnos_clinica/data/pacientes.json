@@ -8,5 +8,20 @@
         "nombre": "vanessa ",
         "telefono": "3587665",
         "motivo": "dolor de cabeza\r\n"
+    },
+    {
+        "nombre": "juan",
+        "telefono": "2365987",
+        "motivo": "mareos"
+    },
+    {
+        "nombre": "felipe",
+        "telefono": "6549534",
+        "motivo": "dolor estomacal"
+    },
+    {
+        "nombre": "mario",
+        "telefono": "5987324",
+        "motivo": "infeccion"
     }
 ]

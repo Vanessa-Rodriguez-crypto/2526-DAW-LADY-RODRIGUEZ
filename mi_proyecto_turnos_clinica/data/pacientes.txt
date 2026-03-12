@@ -1,3 +1,5 @@
 maria,3254485,malestar 
-vanessa ,3587665,dolor de cabeza
-
+vanessa ,3587665,dolor de cabeza
+juan,2365987,mareos
+felipe,6549534,dolor estomacal
+mario,5987324,infeccion

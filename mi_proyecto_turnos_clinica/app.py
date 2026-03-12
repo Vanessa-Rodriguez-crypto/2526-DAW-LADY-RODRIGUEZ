@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect
 from models import db, Paciente
-
+from conexion.conexion import conectar
 import json
 import csv
 import os
@@ -126,8 +126,10 @@ def agregar_paciente():
         telefono = request.form["telefono"]
         motivo = request.form["motivo"]
 
+        # GUARDAR EN ARCHIVOS
         guardar_archivos(nombre, telefono, motivo)
 
+        # GUARDAR EN SQLITE
         nuevo = Paciente(
             nombre=nombre,
             telefono=telefono,
@@ -136,6 +138,18 @@ def agregar_paciente():
 
         db.session.add(nuevo)
         db.session.commit()
+
+        # GUARDAR EN MYSQL
+        conn = conectar()
+        cursor = conn.cursor()
+
+        sql = "INSERT INTO pacientes (nombre, telefono, motivo) VALUES (%s,%s,%s)"
+        valores = (nombre, telefono, motivo)
+
+        cursor.execute(sql, valores)
+
+        conn.commit()
+        conn.close()
 
         return redirect("/pacientes")
 
@@ -221,6 +235,24 @@ def ver_datos():
         json=datos_json,
         csv=datos_csv
     )
+
+
+#---------------------
+#conectar el mysql
+#---------------------
+@app.route("/test_mysql")
+def test_mysql():
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("SHOW TABLES")
+
+    tablas = cursor.fetchall()
+
+    conn.close()
+
+    return str(tablas)
 
 
 # -------------------
