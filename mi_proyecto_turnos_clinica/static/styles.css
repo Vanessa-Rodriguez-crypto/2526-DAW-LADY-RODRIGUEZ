@@ -5,6 +5,7 @@ body{
     margin: 30px;
 }
 
+/* TITULOS */
 h1{
     color: #1f4e79;
 }
@@ -13,6 +14,7 @@ h2{
     color: #2e75b6;
 }
 
+/* NAV */
 nav{
     margin-bottom: 15px;
 }
@@ -25,20 +27,51 @@ nav a{
 }
 
 nav a:hover{
-    color: red;
+    color: #0056b3;
 }
 
+/* CONTENEDOR */
 main{
     background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0px 0px 8px rgba(0,0,0,0.15);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
 }
 
-footer{
+/* FORMULARIOS */
+.form-container{
+    background: white;
+    padding: 30px;
+    width: 400px;
+    margin: auto;
     margin-top: 40px;
-    color: gray;
-    font-size: 12px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 15px rgba(0,0,0,0.15);
+}
+
+input, textarea{
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #bcdcff;
+    border-radius: 6px;
+}
+
+/* BOTONES */
+button{
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(45deg, #0a7cff, #0056b3);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover{
+    opacity: 0.9;
 }
 
 /* TABLAS */
@@ -49,32 +82,26 @@ table{
     margin-top: 20px;
 }
 
-/* encabezado */
 th{
-    background-color: #6c757d;
+    background-color: #2e75b6;
     color: white;
     padding: 10px;
-    text-align: center;
 }
 
-/* filas */
 td{
-    background-color: #f2f2f2;
+    background-color: #f2f6fb;
     padding: 10px;
-    text-align: center;
 }
 
-/* borde */
 table, th, td{
-    border: 1px solid #ccc;
+    border: 1px solid #cfe2f3;
 }
 
-/* efecto al pasar mouse */
 tr:hover{
-    background-color: #e0e0e0;
+    background-color: #e3f0ff;
 }
 
-/* BOTONES */
+/* BOTONES ACCIONES */
 .btn-editar{
     background-color: #ffc107;
     padding: 5px 10px;
@@ -91,7 +118,21 @@ tr:hover{
     border-radius: 5px;
 }
 
-/* espacio entre botones */
+/* ESPACIO ENTRE BOTONES */
 .acciones a{
     margin: 5px;
+}
+
+.btn-panel{
+    display: inline-block;
+    padding: 12px 20px;
+    background: linear-gradient(45deg, #0a7cff, #0056b3);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: bold;
+}
+
+.btn-panel:hover{
+    opacity: 0.9;
 }

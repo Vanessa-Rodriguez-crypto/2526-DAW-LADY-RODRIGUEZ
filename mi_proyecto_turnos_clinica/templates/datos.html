@@ -62,13 +62,13 @@
 </tr>
 
 {% for p in csv %}
-
-<tr>
-<td>{{ p[0] }}</td>
-<td>{{ p[1] }}</td>
-<td>{{ p[2] }}</td>
-</tr>
-
+    {% if p|length >= 3 %}
+    <tr>
+        <td>{{ p[0] }}</td>
+        <td>{{ p[1] }}</td>
+        <td>{{ p[2] }}</td>
+    </tr>
+    {% endif %}
 {% endfor %}
 
 </table>

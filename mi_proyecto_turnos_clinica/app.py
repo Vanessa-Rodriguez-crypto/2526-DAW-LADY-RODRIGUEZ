@@ -1,35 +1,61 @@
 from flask import Flask, render_template, request, redirect
-from models import db, Paciente
+from models import db, Paciente, Usuario
 from conexion.conexion import conectar
 import json
 import csv
 import os
 
-app = Flask(__name__)
+# LOGIN
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
 
-# CONFIGURACIÓN SQLITE
+app = Flask(__name__)
+app.secret_key = "clave_secreta_clinica"
+
+# ------------------------
+# CONFIG LOGIN
+# ------------------------
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
+
+@login_manager.user_loader
+def load_user(user_id):
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM usuarios WHERE id_usuario = %s", (user_id,))
+    user = cursor.fetchone()
+
+    conn.close()
+
+    if user:
+        return Usuario(user[0], user[1], user[2], user[3])
+    return None
+
+
+# ------------------------
+# SQLITE
+# ------------------------
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///clinica.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db.init_app(app)
 
-# Crear base de datos
 with app.app_context():
     db.create_all()
 
 
-# -------------------------
-# GUARDAR DATOS EN ARCHIVOS
-# -------------------------
+# ------------------------
+# GUARDAR ARCHIVOS
+# ------------------------
 def guardar_archivos(nombre, telefono, motivo):
 
     os.makedirs("data", exist_ok=True)
 
-    # TXT
     with open("data/pacientes.txt", "a") as f:
         f.write(f"{nombre},{telefono},{motivo}\n")
 
-    # JSON
     try:
         with open("data/pacientes.json", "r") as f:
             datos = json.load(f)
@@ -45,9 +71,7 @@ def guardar_archivos(nombre, telefono, motivo):
     with open("data/pacientes.json", "w") as f:
         json.dump(datos, f, indent=4)
 
-    # CSV
     archivo_csv = "data/pacientes.csv"
-
     existe = os.path.isfile(archivo_csv)
 
     with open(archivo_csv, "a", newline="") as f:
@@ -59,47 +83,114 @@ def guardar_archivos(nombre, telefono, motivo):
         writer.writerow([nombre, telefono, motivo])
 
 
-# -------------------
-# PAGINA PRINCIPAL
-# -------------------
+# ------------------------
+# LOGIN
+# ------------------------
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        cursor.execute("SELECT * FROM usuarios WHERE email = %s", (email,))
+        user = cursor.fetchone()
+
+        conn.close()
+
+        if user and check_password_hash(user[3], password):
+            usuario = Usuario(user[0], user[1], user[2], user[3])
+            login_user(usuario)
+            return redirect('/panel')
+
+        return "Correo o contraseña incorrectos"
+
+    return render_template('login.html')
+
+
+# ------------------------
+# REGISTRO
+# ------------------------
+@app.route('/registro', methods=['GET', 'POST'])
+def registro():
+
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        email = request.form['email']
+        password = generate_password_hash(request.form['password'])
+
+        conn = conectar()
+        cursor = conn.cursor()
+
+        sql = "INSERT INTO usuarios (nombre, email, password) VALUES (%s,%s,%s)"
+        valores = (nombre, email, password)
+
+        cursor.execute(sql, valores)
+        conn.commit()
+        conn.close()
+
+        return redirect('/login')
+
+    return render_template('registro.html')
+
+
+# ------------------------
+# LOGOUT
+# ------------------------
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/login')
+
+
+# ------------------------
+# PANEL
+# ------------------------
+@app.route('/panel')
+@login_required
+def panel():
+    return render_template("panel.html")
+
+# ------------------------
+# PAGINAS
+# ------------------------
 @app.route('/')
 def inicio():
     return render_template("index.html")
 
-
-# -------------------
-# ACERCA DE
-# -------------------
 @app.route('/about')
 def about():
     return render_template("about.html")
 
 
-# -------------------
-# LISTAR PACIENTES
-# -------------------
+# ------------------------
+# PACIENTES (PROTEGIDO)
+# ------------------------
 @app.route("/pacientes")
+@login_required
 def pacientes():
     pacientes = Paciente.query.all()
     return render_template("pacientes.html", pacientes=pacientes)
 
 
-# -------------------
-# SOLICITAR CITA
-# -------------------
+# ------------------------
+# CITA (PROTEGIDO)
+# ------------------------
 @app.route('/cita', methods=["GET", "POST"])
+@login_required
 def cita():
 
     if request.method == "POST":
-
         nombre = request.form["nombre"]
         telefono = request.form["telefono"]
         motivo = request.form["motivo"]
 
-        # guardar en archivos
         guardar_archivos(nombre, telefono, motivo)
 
-        # guardar en SQLite con SQLAlchemy
         nuevo = Paciente(
             nombre=nombre,
             telefono=telefono,
@@ -114,22 +205,22 @@ def cita():
     return render_template("cita.html")
 
 
-# -------------------
+# ------------------------
 # AGREGAR PACIENTE
-# -------------------
+# ------------------------
 @app.route("/agregar", methods=["GET","POST"])
+@login_required
 def agregar_paciente():
 
     if request.method == "POST":
+        print("ENTRANDO POST")  # prueba
 
         nombre = request.form["nombre"]
         telefono = request.form["telefono"]
         motivo = request.form["motivo"]
 
-        # GUARDAR EN ARCHIVOS
         guardar_archivos(nombre, telefono, motivo)
 
-        # GUARDAR EN SQLITE
         nuevo = Paciente(
             nombre=nombre,
             telefono=telefono,
@@ -139,7 +230,6 @@ def agregar_paciente():
         db.session.add(nuevo)
         db.session.commit()
 
-        # GUARDAR EN MYSQL
         conn = conectar()
         cursor = conn.cursor()
 
@@ -147,54 +237,53 @@ def agregar_paciente():
         valores = (nombre, telefono, motivo)
 
         cursor.execute(sql, valores)
-
         conn.commit()
         conn.close()
 
         return redirect("/pacientes")
 
+  
+    print("ENTRANDO GET")
     return render_template("agregar_paciente.html")
 
 
-# -------------------
-# ELIMINAR PACIENTE
-# -------------------
+# ------------------------
+# ELIMINAR
+# ------------------------
 @app.route("/eliminar/<int:id>")
+@login_required
 def eliminar(id):
-
     paciente = Paciente.query.get(id)
-
     db.session.delete(paciente)
     db.session.commit()
-
     return redirect("/pacientes")
 
 
-# -------------------
-# EDITAR PACIENTE
-# -------------------
+# ------------------------
+# EDITAR
+# ------------------------
 @app.route("/editar/<int:id>", methods=["GET","POST"])
+@login_required
 def editar(id):
 
     paciente = Paciente.query.get(id)
 
     if request.method == "POST":
-
         paciente.nombre = request.form["nombre"]
         paciente.telefono = request.form["telefono"]
         paciente.motivo = request.form["motivo"]
 
         db.session.commit()
-
         return redirect("/pacientes")
 
     return render_template("editar_paciente.html", paciente=paciente)
 
 
-# -------------------
-# MOSTRAR DATOS TXT JSON CSV
-# -------------------
+# ------------------------
+# MOSTRAR DATOS
+# ------------------------
 @app.route("/datos")
+@login_required
 def ver_datos():
 
     # -------- TXT --------
@@ -206,28 +295,24 @@ def ver_datos():
     except:
         pass
 
-
     # -------- JSON --------
     datos_json = []
     try:
-        import json
         with open("data/pacientes.json", "r") as archivo:
             datos_json = json.load(archivo)
     except:
         pass
 
-
     # -------- CSV --------
     datos_csv = []
     try:
-        import csv
         with open("data/pacientes.csv", "r") as archivo:
             lector = csv.reader(archivo)
+            next(lector, None)  # 👈 saltar cabecera
             for fila in lector:
                 datos_csv.append(fila)
     except:
         pass
-
 
     return render_template(
         "datos.html",
@@ -236,10 +321,9 @@ def ver_datos():
         csv=datos_csv
     )
 
-
-#---------------------
-#conectar el mysql
-#---------------------
+# ------------------------
+# TEST MYSQL
+# ------------------------
 @app.route("/test_mysql")
 def test_mysql():
 
@@ -247,7 +331,6 @@ def test_mysql():
     cursor = conn.cursor()
 
     cursor.execute("SHOW TABLES")
-
     tablas = cursor.fetchall()
 
     conn.close()
@@ -255,8 +338,8 @@ def test_mysql():
     return str(tablas)
 
 
-# -------------------
-# EJECUTAR APP
-# -------------------
+# ------------------------
+# RUN
+# ------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)

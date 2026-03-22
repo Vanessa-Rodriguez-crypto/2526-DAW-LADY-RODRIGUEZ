@@ -10,3 +10,12 @@ class Paciente(db.Model):
 
     def __repr__(self):
         return f'<Paciente {self.nombre}>'
+
+from flask_login import UserMixin
+
+class Usuario(UserMixin):
+    def __init__(self, id, nombre, email, password):
+        self.id = id
+        self.nombre = nombre
+        self.email = email
+        self.password = password
