@@ -26,7 +26,11 @@
 
 <a href="/editar/{{p.id}}" class="btn-editar">Editar</a>
 
-<a href="/eliminar/{{p.id}}" class="btn-eliminar">Eliminar</a>
+<a href="/eliminar/{{ p.id }}" 
+   onclick="return confirm('¿Seguro que deseas eliminar este paciente?')"
+   class="btn-eliminar">
+   Eliminar
+</a>
 
 </td>
 

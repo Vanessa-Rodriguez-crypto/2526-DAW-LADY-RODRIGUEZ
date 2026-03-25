@@ -23,5 +23,35 @@
         "nombre": "mario",
         "telefono": "5987324",
         "motivo": "infeccion"
+    },
+    {
+        "nombre": "cristina",
+        "telefono": "35694785",
+        "motivo": "vomito "
+    },
+    {
+        "nombre": "luis",
+        "telefono": "7951462",
+        "motivo": "malestar "
+    },
+    {
+        "nombre": "luis",
+        "telefono": "7951462",
+        "motivo": "malestar "
+    },
+    {
+        "nombre": "luis",
+        "telefono": "7951462",
+        "motivo": "malestar "
+    },
+    {
+        "nombre": "julian",
+        "telefono": "7951462",
+        "motivo": "malestar "
+    },
+    {
+        "nombre": "julian",
+        "telefono": "7951462",
+        "motivo": "malestar"
     }
 ]

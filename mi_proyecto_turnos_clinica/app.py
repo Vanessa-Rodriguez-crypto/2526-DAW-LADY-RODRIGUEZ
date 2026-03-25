@@ -1,13 +1,17 @@
-from flask import Flask, render_template, request, redirect
-from models import db, Paciente, Usuario
+from flask import Flask, render_template, request, redirect, send_file
+from models import db, Paciente, Usuario, Cita
+from services.paciente_service import insertar_paciente
 from conexion.conexion import conectar
 import json
 import csv
 import os
 
 # LOGIN
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, login_user, logout_user, login_required
 from werkzeug.security import generate_password_hash, check_password_hash
+
+# PDF
+from fpdf import FPDF
 
 app = Flask(__name__)
 app.secret_key = "clave_secreta_clinica"
@@ -21,18 +25,34 @@ login_manager.login_view = "login"
 
 @login_manager.user_loader
 def load_user(user_id):
-    conn = conectar()
-    cursor = conn.cursor()
+    try:
+        conn = conectar()
+        cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM usuarios WHERE id_usuario = %s", (user_id,))
-    user = cursor.fetchone()
+        cursor.execute(
+            "SELECT * FROM usuarios WHERE id_usuario = %s",
+            (user_id,)
+        )
+        user = cursor.fetchone()
 
-    conn.close()
+        conn.close()
 
-    if user:
-        return Usuario(user[0], user[1], user[2], user[3])
+        if user:
+            class UserLogin(Usuario):
+                pass
+
+            usuario = UserLogin()
+            usuario.id_usuario = user["id_usuario"]
+            usuario.nombre = user["nombre"]
+            usuario.email = user["email"]
+            usuario.password = user["password"]
+
+            return usuario
+
+    except Exception as e:
+        print("Error load_user:", e)
+
     return None
-
 
 # ------------------------
 # SQLITE
@@ -53,24 +73,31 @@ def guardar_archivos(nombre, telefono, motivo):
 
     os.makedirs("data", exist_ok=True)
 
+    # -------- TXT --------
     with open("data/pacientes.txt", "a") as f:
         f.write(f"{nombre},{telefono},{motivo}\n")
 
+    # -------- JSON --------
     try:
         with open("data/pacientes.json", "r") as f:
             datos = json.load(f)
     except:
         datos = []
 
-    datos.append({
+    nuevo = {
         "nombre": nombre,
         "telefono": telefono,
         "motivo": motivo
-    })
+    }
+
+    # SOLO AGREGA SI NO EXISTE
+    if nuevo not in datos:
+        datos.append(nuevo)
 
     with open("data/pacientes.json", "w") as f:
         json.dump(datos, f, indent=4)
 
+    # -------- CSV --------
     archivo_csv = "data/pacientes.csv"
     existe = os.path.isfile(archivo_csv)
 
@@ -84,7 +111,7 @@ def guardar_archivos(nombre, telefono, motivo):
 
 
 # ------------------------
-# LOGIN
+# LOGIN 
 # ------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -93,94 +120,45 @@ def login():
         email = request.form['email']
         password = request.form['password']
 
-        conn = conectar()
-        cursor = conn.cursor()
+        try:
+            conn = conectar()
+            cursor = conn.cursor(dictionary=True)
 
-        cursor.execute("SELECT * FROM usuarios WHERE email = %s", (email,))
-        user = cursor.fetchone()
+            cursor.execute("SELECT * FROM usuarios WHERE email = %s", (email,))
+            user = cursor.fetchone()
 
-        conn.close()
+            conn.close()
 
-        if user and check_password_hash(user[3], password):
-            usuario = Usuario(user[0], user[1], user[2], user[3])
-            login_user(usuario)
-            return redirect('/panel')
+        except Exception as e:
+            print("Error login:", e)
+            user = None
+
+        if user:
+            print("Usuario encontrado:", user)
+
+            if check_password_hash(user["password"], password):
+
+                # crear objeto manual compatible con Flask-Login
+                class UserLogin(Usuario):
+                    pass
+
+                usuario = UserLogin()
+                usuario.id_usuario = user["id_usuario"]
+                usuario.nombre = user["nombre"]
+                usuario.email = user["email"]
+                usuario.password = user["password"]
+
+                login_user(usuario)
+                return redirect('/panel')
 
         return "Correo o contraseña incorrectos"
 
     return render_template('login.html')
 
-
-# ------------------------
-# REGISTRO
-# ------------------------
-@app.route('/registro', methods=['GET', 'POST'])
-def registro():
-
-    if request.method == 'POST':
-        nombre = request.form['nombre']
-        email = request.form['email']
-        password = generate_password_hash(request.form['password'])
-
-        conn = conectar()
-        cursor = conn.cursor()
-
-        sql = "INSERT INTO usuarios (nombre, email, password) VALUES (%s,%s,%s)"
-        valores = (nombre, email, password)
-
-        cursor.execute(sql, valores)
-        conn.commit()
-        conn.close()
-
-        return redirect('/login')
-
-    return render_template('registro.html')
-
-
-# ------------------------
-# LOGOUT
-# ------------------------
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect('/login')
-
-
-# ------------------------
-# PANEL
-# ------------------------
-@app.route('/panel')
-@login_required
-def panel():
-    return render_template("panel.html")
-
-# ------------------------
-# PAGINAS
-# ------------------------
-@app.route('/')
-def inicio():
-    return render_template("index.html")
-
-@app.route('/about')
-def about():
-    return render_template("about.html")
-
-
-# ------------------------
-# PACIENTES (PROTEGIDO)
-# ------------------------
-@app.route("/pacientes")
-@login_required
-def pacientes():
-    pacientes = Paciente.query.all()
-    return render_template("pacientes.html", pacientes=pacientes)
-
-
-# ------------------------
-# CITA (PROTEGIDO)
-# ------------------------
-@app.route('/cita', methods=["GET", "POST"])
+#-----------------------
+#solicitar cita 
+#-----------------------
+@app.route('/cita', methods=['GET','POST'])
 @login_required
 def cita():
 
@@ -206,6 +184,77 @@ def cita():
 
 
 # ------------------------
+# REGISTRO
+# ------------------------
+@app.route('/registro', methods=['GET', 'POST'])
+def registro():
+
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        email = request.form['email']
+        password = generate_password_hash(request.form['password'])
+
+        try:
+            conn = conectar()
+            cursor = conn.cursor()
+
+            cursor.execute(
+                "INSERT INTO usuarios (nombre, email, password) VALUES (%s,%s,%s)",
+                (nombre, email, password)
+            )
+
+            conn.commit()
+            conn.close()
+        except Exception as e:
+             print("ERROR MYSQL:", e)
+
+        return redirect('/login')
+
+    return render_template('registro.html')
+
+
+# ------------------------
+# LOGOUT
+# ------------------------
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/login')
+
+
+# ------------------------
+# PANEL
+# ------------------------
+@app.route('/panel')
+@login_required
+def panel():
+    return render_template("panel.html")
+
+
+# ------------------------
+# PAGINAS
+# ------------------------
+@app.route('/')
+def inicio():
+    return render_template("index.html")
+
+@app.route('/about')
+def about():
+    return render_template("about.html")
+
+
+# ------------------------
+# LISTAR PACIENTES
+# ------------------------
+@app.route("/pacientes")
+@login_required
+def pacientes():
+    pacientes = Paciente.query.all()
+    return render_template("pacientes.html", pacientes=pacientes)
+
+
+# ------------------------
 # AGREGAR PACIENTE
 # ------------------------
 @app.route("/agregar", methods=["GET","POST"])
@@ -213,14 +262,21 @@ def cita():
 def agregar_paciente():
 
     if request.method == "POST":
-        print("ENTRANDO POST")  # prueba
 
-        nombre = request.form["nombre"]
-        telefono = request.form["telefono"]
-        motivo = request.form["motivo"]
+        from forms.paciente_form import PacienteForm
+        form = PacienteForm(request.form)
 
+        if not form.validar():
+            return "Datos incompletos"
+
+        nombre = form.nombre
+        telefono = form.telefono
+        motivo = form.motivo
+
+        # Guardar en archivos (txt, json, csv)
         guardar_archivos(nombre, telefono, motivo)
 
+        # GUARDAR EN BASE DE DATOS (SQLITE - SQLAlchemy)
         nuevo = Paciente(
             nombre=nombre,
             telefono=telefono,
@@ -230,34 +286,9 @@ def agregar_paciente():
         db.session.add(nuevo)
         db.session.commit()
 
-        conn = conectar()
-        cursor = conn.cursor()
-
-        sql = "INSERT INTO pacientes (nombre, telefono, motivo) VALUES (%s,%s,%s)"
-        valores = (nombre, telefono, motivo)
-
-        cursor.execute(sql, valores)
-        conn.commit()
-        conn.close()
-
         return redirect("/pacientes")
 
-  
-    print("ENTRANDO GET")
     return render_template("agregar_paciente.html")
-
-
-# ------------------------
-# ELIMINAR
-# ------------------------
-@app.route("/eliminar/<int:id>")
-@login_required
-def eliminar(id):
-    paciente = Paciente.query.get(id)
-    db.session.delete(paciente)
-    db.session.commit()
-    return redirect("/pacientes")
-
 
 # ------------------------
 # EDITAR
@@ -280,13 +311,24 @@ def editar(id):
 
 
 # ------------------------
-# MOSTRAR DATOS
+# ELIMINAR
+# ------------------------
+@app.route("/eliminar/<int:id>")
+@login_required
+def eliminar(id):
+    paciente = Paciente.query.get(id)
+    db.session.delete(paciente)
+    db.session.commit()
+    return redirect("/pacientes")
+
+
+# ------------------------
+# DATOS ARCHIVOS
 # ------------------------
 @app.route("/datos")
 @login_required
 def ver_datos():
 
-    # -------- TXT --------
     datos_txt = []
     try:
         with open("data/pacientes.txt", "r") as archivo:
@@ -295,7 +337,6 @@ def ver_datos():
     except:
         pass
 
-    # -------- JSON --------
     datos_json = []
     try:
         with open("data/pacientes.json", "r") as archivo:
@@ -303,23 +344,50 @@ def ver_datos():
     except:
         pass
 
-    # -------- CSV --------
     datos_csv = []
     try:
         with open("data/pacientes.csv", "r") as archivo:
             lector = csv.reader(archivo)
-            next(lector, None)  # 👈 saltar cabecera
+            next(lector, None)
             for fila in lector:
                 datos_csv.append(fila)
     except:
         pass
 
-    return render_template(
-        "datos.html",
-        txt=datos_txt,
-        json=datos_json,
-        csv=datos_csv
-    )
+    return render_template("datos.html", txt=datos_txt, json=datos_json, csv=datos_csv)
+
+
+# ------------------------
+# REPORTE PDF
+# ------------------------
+@app.route('/reporte')
+@login_required
+def reporte():
+
+    try:
+        conn = conectar()
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM pacientes")
+        datos = cursor.fetchall()
+        conn.close()
+    except:
+        datos = []
+
+    pdf = FPDF()
+    pdf.add_page()
+
+    pdf.set_font("Arial", "B", 14)
+    pdf.cell(200, 10, txt="Reporte de Pacientes", ln=True, align='C')
+
+    pdf.set_font("Arial", size=10)
+
+    for p in datos:
+        pdf.cell(200, 10, txt=f"{p[1]} - {p[2]} - {p[3]}", ln=True)
+
+    pdf.output("reporte.pdf")
+
+    return send_file("reporte.pdf", as_attachment=True)
+
 
 # ------------------------
 # TEST MYSQL
@@ -327,15 +395,15 @@ def ver_datos():
 @app.route("/test_mysql")
 def test_mysql():
 
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("SHOW TABLES")
-    tablas = cursor.fetchall()
-
-    conn.close()
-
-    return str(tablas)
+    try:
+        conn = conectar()
+        cursor = conn.cursor()
+        cursor.execute("SHOW TABLES")
+        tablas = cursor.fetchall()
+        conn.close()
+        return str(tablas)
+    except:
+        return "Error MySQL"
 
 
 # ------------------------
