@@ -7,20 +7,32 @@
 <table>
 
 <tr>
-<th>ID</th>
+<th>#</th>
 <th>Nombre</th>
 <th>Teléfono</th>
 <th>Motivo</th>
+<th>Citas</th>
 <th>Acciones</th>
 </tr>
 
 {% for p in pacientes %}
 <tr>
 
-<td>{{ p.id }}</td>
+<td>{{ loop.index }}</td>
 <td>{{ p.nombre }}</td>
 <td>{{ p.telefono }}</td>
 <td>{{ p.motivo }}</td>
+
+<!--  SE MUESTRAN LAS CITAS -->
+<td>
+    {% if p.citas %}
+        {% for c in p.citas %}
+            {{ c.fecha }} <br>
+        {% endfor %}
+    {% else %}
+        Sin citas
+    {% endif %}
+</td>
 
 <td class="acciones">
 

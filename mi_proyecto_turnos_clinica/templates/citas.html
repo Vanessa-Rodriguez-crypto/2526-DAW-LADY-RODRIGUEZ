@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 style="text-align:center;">Lista de Citas</h2>
+
+<table>
+<tr>
+<th>#</th>
+<th>Paciente</th>
+<th>Fecha</th>
+<th>Motivo</th>
+</tr>
+
+{% for c in citas %}
+<tr>
+<td>{{ loop.index }}</td>
+<td>{{ c.paciente.nombre }}</td>
+<td>{{ c.fecha }}</td>
+<td>{{ c.motivo }}</td>
+</tr>
+{% endfor %}
+
+</table>
+
+{% endblock %}

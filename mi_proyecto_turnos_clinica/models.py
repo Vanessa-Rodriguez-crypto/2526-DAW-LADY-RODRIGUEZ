@@ -14,6 +14,7 @@ class Usuario(UserMixin, db.Model):
     email = db.Column(db.String(100))
     password = db.Column(db.String(200))
 
+    
     def get_id(self):
         return str(self.id_usuario)
     
@@ -21,27 +22,22 @@ class Usuario(UserMixin, db.Model):
 # PACIENTES
 # ------------------------
 class Paciente(db.Model):
-    __tablename__ = "pacientes"
-
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
     telefono = db.Column(db.String(50), nullable=False)
     motivo = db.Column(db.String(200), nullable=False)
 
-    # RELACIÓN con citas
-    citas = db.relationship("Cita", backref="paciente", lazy=True)
+    #  RELACIÓN
+    citas = db.relationship('Cita', backref='paciente')
 
     def __repr__(self):
         return f'<Paciente {self.nombre}>'
-
 
 # ------------------------
 # CITAS 
 # ------------------------
 class Cita(db.Model):
-    __tablename__ = "citas"
-
     id = db.Column(db.Integer, primary_key=True)
-    id_paciente = db.Column(db.Integer, db.ForeignKey("pacientes.id"), nullable=False)
-    fecha = db.Column(db.String(50), nullable=False)
-    motivo = db.Column(db.String(200), nullable=False)
+    id_paciente = db.Column(db.Integer, db.ForeignKey('paciente.id'))
+    fecha = db.Column(db.String(50))
+    motivo = db.Column(db.String(200))

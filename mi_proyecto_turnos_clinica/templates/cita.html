@@ -2,24 +2,29 @@
 
 {% block content %}
 
-<h2>Solicitar Cita Médica</h2>
+<h2 style="text-align:center;">Solicitar Cita</h2>
+
+<div class="form-container">
 
 <form method="POST">
 
-<label>Nombre</label><br>
-<input type="text" name="nombre" required><br><br>
+<label>Paciente:</label>
+<select name="id_paciente" required>
+    {% for p in pacientes %}
+        <option value="{{ p.id }}">{{ p.nombre }}</option>
+    {% endfor %}
+</select>
 
-<label>Teléfono</label><br>
-<input type="text" name="telefono" required><br><br>
+<label>Fecha:</label>
+<input type="date" name="fecha" required>
 
-<label>Motivo de la cita</label><br>
-<textarea name="motivo" rows="4" required></textarea><br><br>
+<label>Motivo:</label>
+<textarea name="motivo" required></textarea>
 
 <button type="submit">Guardar Cita</button>
 
 </form>
 
-<br>
-<a href="/">Volver al inicio</a>
+</div>
 
 {% endblock %}

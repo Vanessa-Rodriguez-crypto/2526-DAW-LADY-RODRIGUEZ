@@ -124,64 +124,84 @@ def login():
             conn = conectar()
             cursor = conn.cursor(dictionary=True)
 
-            cursor.execute("SELECT * FROM usuarios WHERE email = %s", (email,))
-            user = cursor.fetchone()
+            cursor.execute(
+                "SELECT * FROM usuarios WHERE email = %s",
+                (email,)
+            )
 
+            user = cursor.fetchone()
             conn.close()
 
+            print("USER:", user)
+
         except Exception as e:
-            print("Error login:", e)
+            print("ERROR LOGIN:", e)
             user = None
 
-        if user:
-            print("Usuario encontrado:", user)
+        if user and check_password_hash(user["password"], password):
 
-            if check_password_hash(user["password"], password):
+            usuario = Usuario()
+            usuario.id_usuario = user["id_usuario"]
+            usuario.nombre = user["nombre"]
+            usuario.email = user["email"]
+            usuario.password = user["password"]
 
-                # crear objeto manual compatible con Flask-Login
-                class UserLogin(Usuario):
-                    pass
-
-                usuario = UserLogin()
-                usuario.id_usuario = user["id_usuario"]
-                usuario.nombre = user["nombre"]
-                usuario.email = user["email"]
-                usuario.password = user["password"]
-
-                login_user(usuario)
-                return redirect('/panel')
+            login_user(usuario)
+            return redirect('/panel')
 
         return "Correo o contraseña incorrectos"
 
     return render_template('login.html')
 
+#---------------------
+#Lista de Cita
+#---------------------
+@app.route("/citas")
+@login_required
+def listar_citas():
+    citas = Cita.query.all()
+    return render_template("citas.html", citas=citas)
+
 #-----------------------
 #solicitar cita 
 #-----------------------
-@app.route('/cita', methods=['GET','POST'])
+@app.route('/cita', methods=["GET", "POST"])
 @login_required
 def cita():
 
+    pacientes = Paciente.query.all()
+
     if request.method == "POST":
-        nombre = request.form["nombre"]
-        telefono = request.form["telefono"]
+        id_paciente = request.form["id_paciente"]
+        fecha = request.form["fecha"]
         motivo = request.form["motivo"]
 
-        guardar_archivos(nombre, telefono, motivo)
-
-        nuevo = Paciente(
-            nombre=nombre,
-            telefono=telefono,
+        # SQLITE
+        nueva = Cita(
+            id_paciente=id_paciente,
+            fecha=fecha,
             motivo=motivo
         )
 
-        db.session.add(nuevo)
+        db.session.add(nueva)
         db.session.commit()
 
-        return redirect("/pacientes")
+        # MYSQL
+        try:
+            conn = conectar()
+            cursor = conn.cursor()
+            cursor.execute(
+                "INSERT INTO citas (id_paciente, fecha, motivo) VALUES (%s,%s,%s)",
+                (id_paciente, fecha, motivo)
+            )
+            conn.commit()
+            conn.close()
+        except:
+            print("Error MySQL citas")
 
-    return render_template("cita.html")
+        return redirect("/citas")  # ahora redirige a lista
 
+    return render_template("cita.html", pacientes=pacientes)
 
 # ------------------------
 # REGISTRO
@@ -205,8 +225,11 @@ def registro():
 
             conn.commit()
             conn.close()
+
+            print("USUARIO GUARDADO")
+
         except Exception as e:
-             print("ERROR MYSQL:", e)
+            print("ERROR REGISTRO:", e)
 
         return redirect('/login')
 
